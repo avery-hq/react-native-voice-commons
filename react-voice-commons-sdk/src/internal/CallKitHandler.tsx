@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { Platform, DeviceEventEmitter } from 'react-native';
-import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTelnyxVoice } from '../context/TelnyxVoiceContext';
 import { callKitCoordinator } from '../callkit';
@@ -36,7 +35,6 @@ export const CallKitHandler: React.FC<CallKitHandlerProps> = ({
   onNavigateToDialer,
   onNavigateBack,
 }) => {
-  const router = useRouter();
   const { voipClient } = useTelnyxVoice();
 
   // Store active calls by CallKit UUID for coordination
@@ -121,8 +119,6 @@ export const CallKitHandler: React.FC<CallKitHandlerProps> = ({
     // Navigate to dialer after answering
     if (onNavigateToDialer) {
       onNavigateToDialer();
-    } else {
-      router.replace('/dialer');
     }
   };
 
@@ -139,8 +135,6 @@ export const CallKitHandler: React.FC<CallKitHandlerProps> = ({
     // Navigate back after call ends
     if (onNavigateBack) {
       onNavigateBack();
-    } else {
-      router.replace('/dialer');
     }
   };
 

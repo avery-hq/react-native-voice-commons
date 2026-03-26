@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TelnyxVoipClient } from '../telnyx-voip-client';
 import { TelnyxConnectionState } from '../models/connection-state';
@@ -10,6 +9,8 @@ interface UseAppStateHandlerOptions {
   voipClient: TelnyxVoipClient;
   disconnectOnBackground?: boolean;
   navigateToLoginOnDisconnect?: boolean;
+  /** Called when the SDK wants to navigate to a login/home screen after disconnect */
+  onNavigateToLogin?: () => void;
   debug?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const useAppStateHandler = ({
   voipClient,
   disconnectOnBackground = true,
   navigateToLoginOnDisconnect = true,
+  onNavigateToLogin,
   debug = false,
 }: UseAppStateHandlerOptions) => {
   const appState = useRef(AppState.currentState);
@@ -76,8 +78,8 @@ export const useAppStateHandler = ({
               if (!stillInProgress) {
                 log('AppStateHandler: Push notification call completed, now disconnecting socket');
                 await voipClient.logout();
-                if (navigateToLoginOnDisconnect) {
-                  router.replace('/');
+                if (navigateToLoginOnDisconnect && onNavigateToLogin) {
+                  onNavigateToLogin();
                 }
               }
             }, 5000); // Wait 5 seconds
@@ -94,11 +96,11 @@ export const useAppStateHandler = ({
             log('AppStateHandler: Socket disconnected successfully');
 
             // Navigate to login screen
-            if (navigateToLoginOnDisconnect) {
+            if (navigateToLoginOnDisconnect && onNavigateToLogin) {
               // Use a small delay to ensure the disconnect completes
               setTimeout(() => {
                 log('AppStateHandler: Navigating to login screen');
-                router.replace('/');
+                onNavigateToLogin();
               }, 100);
             }
           } catch (error) {

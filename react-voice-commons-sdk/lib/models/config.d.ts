@@ -2,36 +2,36 @@
  * Configuration for credential-based authentication
  */
 export interface CredentialConfig {
-  type: 'credential';
-  sipUser: string;
-  sipPassword: string;
-  debug?: boolean;
-  pushNotificationDeviceToken?: string;
-  /** Enable automatic call quality reporting. Default: true */
-  enableCallReports?: boolean;
-  /** Stats collection interval in seconds. Default: 5 */
-  callReportInterval?: number;
-  /** Minimum log level for call reports: 'debug' | 'info' | 'warn' | 'error'. Default: 'debug' */
-  callReportLogLevel?: string;
-  /** Max log entries per call. Default: 1000 */
-  callReportMaxLogEntries?: number;
+    type: 'credential';
+    sipUser: string;
+    sipPassword: string;
+    debug?: boolean;
+    pushNotificationDeviceToken?: string;
+    /** Enable automatic call quality reporting. Default: true */
+    enableCallReports?: boolean;
+    /** Stats collection interval in seconds. Default: 5 */
+    callReportInterval?: number;
+    /** Minimum log level for call reports: 'debug' | 'info' | 'warn' | 'error'. Default: 'debug' */
+    callReportLogLevel?: string;
+    /** Max log entries per call. Default: 1000 */
+    callReportMaxLogEntries?: number;
 }
 /**
  * Configuration for token-based authentication
  */
 export interface TokenConfig {
-  type: 'token';
-  token: string;
-  debug?: boolean;
-  pushNotificationDeviceToken?: string;
-  /** Enable automatic call quality reporting. Default: true */
-  enableCallReports?: boolean;
-  /** Stats collection interval in seconds. Default: 5 */
-  callReportInterval?: number;
-  /** Minimum log level for call reports: 'debug' | 'info' | 'warn' | 'error'. Default: 'debug' */
-  callReportLogLevel?: string;
-  /** Max log entries per call. Default: 1000 */
-  callReportMaxLogEntries?: number;
+    type: 'token';
+    token: string;
+    debug?: boolean;
+    pushNotificationDeviceToken?: string;
+    /** Enable automatic call quality reporting. Default: true */
+    enableCallReports?: boolean;
+    /** Stats collection interval in seconds. Default: 5 */
+    callReportInterval?: number;
+    /** Minimum log level for call reports: 'debug' | 'info' | 'warn' | 'error'. Default: 'debug' */
+    callReportLogLevel?: string;
+    /** Max log entries per call. Default: 1000 */
+    callReportMaxLogEntries?: number;
 }
 /**
  * Union type for all supported authentication configurations
@@ -67,11 +67,7 @@ export declare function validateConfig(config: Config): string[];
  * @param options.pushNotificationDeviceToken - Device token for push notifications
  * @returns Complete credential configuration object
  */
-export declare function createCredentialConfig(
-  sipUser: string,
-  sipPassword: string,
-  options?: Partial<Omit<CredentialConfig, 'type' | 'sipUser' | 'sipPassword'>>
-): CredentialConfig;
+export declare function createCredentialConfig(sipUser: string, sipPassword: string, options?: Partial<Omit<CredentialConfig, 'type' | 'sipUser' | 'sipPassword'>>): CredentialConfig;
 /**
  * Creates a token-based configuration
  *
@@ -81,7 +77,4 @@ export declare function createCredentialConfig(
  * @param options.pushNotificationDeviceToken - Device token for push notifications
  * @returns Complete token configuration object
  */
-export declare function createTokenConfig(
-  sipToken: string,
-  options?: Partial<Omit<TokenConfig, 'type' | 'sipToken'>>
-): TokenConfig;
+export declare function createTokenConfig(sipToken: string, options?: Partial<Omit<TokenConfig, 'type' | 'sipToken'>>): TokenConfig;

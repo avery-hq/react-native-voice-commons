@@ -8,91 +8,86 @@ import { SessionManager } from '../session/session-manager';
  * and provides reactive streams for call-related state changes.
  */
 export declare class CallStateController {
-  private readonly _sessionManager;
-  private readonly _calls;
-  private readonly _callMap;
-  private _disposed;
-  private _isWaitingForInvite?;
-  private _onInviteAutoAccepted?;
-  constructor(_sessionManager: SessionManager);
-  /**
-   * Observable stream of all current calls
-   */
-  get calls$(): Observable<Call[]>;
-  /**
-   * Observable stream of the currently active call
-   */
-  get activeCall$(): Observable<Call | null>;
-  /**
-   * Current list of calls (synchronous access)
-   */
-  get currentCalls(): Call[];
-  /**
-   * Current active call (synchronous access)
-   */
-  get currentActiveCall(): Call | null;
-  /**
-   * Access any active call tracked by the client.
-   * A call will be accessible until it has ended (transitioned to the ENDED state).
-   * This matches the TelnyxRTC `getCall(callId)` method for multi-call support.
-   *
-   * @param callId The unique identifier of a call.
-   * @returns The Call object that matches the requested callId, or null if not found.
-   */
-  getCall(callId: string): Call | null;
-  /**
-   * Set a call to connecting state (used for push notification calls when answered via CallKit)
-   * @param callId The ID of the call to set to connecting state
-   */
-  setCallConnecting(callId: string): void;
-  /**
-   * Find a call by its underlying Telnyx call ID
-   * @param telnyxCall The Telnyx call object to find
-   */
-  findCallByTelnyxCall(telnyxCall: any): Call | null;
-  /**
-   * Initialize client listeners when the Telnyx client becomes available
-   * This should be called by the session manager after client creation
-   */
-  initializeClientListeners(): void;
-  /**
-   * Initiate a new outgoing call
-   */
-  newCall(
-    destination: string,
-    callerName?: string,
-    callerNumber?: string,
-    customHeaders?: Record<string, string>
-  ): Promise<Call>;
-  /**
-   * Set callbacks for waiting for invite logic (used for push notifications)
-   */
-  setWaitingForInviteCallbacks(callbacks: {
-    isWaitingForInvite: () => boolean;
-    onInviteAutoAccepted: () => void;
-  }): void;
-  /**
-   * Dispose of the controller and clean up resources
-   */
-  dispose(): void;
-  /**
-   * Set up event listeners for the Telnyx client
-   */
-  private _setupClientListeners;
-  /**
-   * Handle incoming call or reattached call
-   */
-  private _handleIncomingCall;
-  /**
-   * Add a call to our tracking
-   */
-  private _addCall;
-  /**
-   * Remove a call from our tracking
-   */
-  private _removeCall;
-  /**
-   * Generate a unique call ID
-   */
-  private _generateCallId;
+    private readonly _sessionManager;
+    private readonly _calls;
+    private readonly _callMap;
+    private _disposed;
+    private _isWaitingForInvite?;
+    private _onInviteAutoAccepted?;
+    constructor(_sessionManager: SessionManager);
+    /**
+     * Observable stream of all current calls
+     */
+    get calls$(): Observable<Call[]>;
+    /**
+     * Observable stream of the currently active call
+     */
+    get activeCall$(): Observable<Call | null>;
+    /**
+     * Current list of calls (synchronous access)
+     */
+    get currentCalls(): Call[];
+    /**
+     * Current active call (synchronous access)
+     */
+    get currentActiveCall(): Call | null;
+    /**
+     * Access any active call tracked by the client.
+     * A call will be accessible until it has ended (transitioned to the ENDED state).
+     * This matches the TelnyxRTC `getCall(callId)` method for multi-call support.
+     *
+     * @param callId The unique identifier of a call.
+     * @returns The Call object that matches the requested callId, or null if not found.
+     */
+    getCall(callId: string): Call | null;
+    /**
+     * Set a call to connecting state (used for push notification calls when answered via CallKit)
+     * @param callId The ID of the call to set to connecting state
+     */
+    setCallConnecting(callId: string): void;
+    /**
+     * Find a call by its underlying Telnyx call ID
+     * @param telnyxCall The Telnyx call object to find
+     */
+    findCallByTelnyxCall(telnyxCall: any): Call | null;
+    /**
+     * Initialize client listeners when the Telnyx client becomes available
+     * This should be called by the session manager after client creation
+     */
+    initializeClientListeners(): void;
+    /**
+     * Initiate a new outgoing call
+     */
+    newCall(destination: string, callerName?: string, callerNumber?: string, customHeaders?: Record<string, string>): Promise<Call>;
+    /**
+     * Set callbacks for waiting for invite logic (used for push notifications)
+     */
+    setWaitingForInviteCallbacks(callbacks: {
+        isWaitingForInvite: () => boolean;
+        onInviteAutoAccepted: () => void;
+    }): void;
+    /**
+     * Dispose of the controller and clean up resources
+     */
+    dispose(): void;
+    /**
+     * Set up event listeners for the Telnyx client
+     */
+    private _setupClientListeners;
+    /**
+     * Handle incoming call or reattached call
+     */
+    private _handleIncomingCall;
+    /**
+     * Add a call to our tracking
+     */
+    private _addCall;
+    /**
+     * Remove a call from our tracking
+     */
+    private _removeCall;
+    /**
+     * Generate a unique call ID
+     */
+    private _generateCallId;
 }

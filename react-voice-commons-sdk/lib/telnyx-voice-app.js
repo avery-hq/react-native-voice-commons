@@ -33,11 +33,22 @@ const TelnyxVoiceAppComponent = ({ voipClient, children, onPushNotificationProce
     const backgroundDetectorIgnore = (0, react_1.useRef)(false);
     // Static background client instance for singleton pattern
     const backgroundClientRef = (0, react_1.useRef)(null);
+    const lastWiredVoipClientRef = (0, react_1.useRef)(null);
     const log = (0, react_1.useCallback)((message, ...args) => {
         if (debug) {
             console.log(`[TelnyxVoiceApp] ${message}`, ...args);
         }
     }, [debug]);
+    if (react_native_1.Platform.OS === 'ios' && lastWiredVoipClientRef.current !== voipClient) {
+        try {
+            const { callKitCoordinator } = require('./callkit/callkit-coordinator');
+            callKitCoordinator.setVoipClient(voipClient);
+            lastWiredVoipClientRef.current = voipClient;
+        }
+        catch (e) {
+            log('Error synchronously wiring voipClient on CallKit coordinator:', e);
+        }
+    }
     // Handle app state changes
     const handleAppStateChange = (0, react_1.useCallback)(async (nextAppState) => {
         const previousAppState = appStateRef.current;

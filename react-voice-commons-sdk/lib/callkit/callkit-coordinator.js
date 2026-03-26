@@ -61,6 +61,8 @@ class CallKitCoordinator {
         // Tracks calls that have already been reported as connected to prevent duplicate reports
         this.connectedCalls = new Set();
         this.isCallFromPush = false;
+        this.pendingPushCallKitUUID = null;
+        this.pendingPushEvent = null;
         // Flag to auto-answer the next incoming call (set when answering push notifications via CallKit)
         this.shouldAutoAnswerNextCall = false;
         // Reference to the VoIP client for triggering reconnection when needed
@@ -372,9 +374,16 @@ class CallKitCoordinator {
      * This allows us to coordinate between the push notification and any subsequent WebRTC calls
      */
     async handleCallKitPushReceived(callKitUUID, event) {
-        if (this.isCallFromPush) {
-            this.isCallFromPush = false;
-            console.log('CallKitCoordinator: Ignoring push received event (already processed)');
+        if (this.processingCalls.has(callKitUUID)) {
+            console.log('CallKitCoordinator: Push received already processing, skipping duplicate', {
+                callKitUUID,
+            });
+            return;
+        }
+        if (this.pendingPushCallKitUUID === callKitUUID && !this.voipClient) {
+            console.log('CallKitCoordinator: Push received already queued, waiting for VoIP client', {
+                callKitUUID,
+            });
             return;
         }
         console.log('CallKitCoordinator: Processing push received event', {
@@ -391,9 +400,15 @@ class CallKitCoordinator {
             // Get VoIP client instance
             const voipClient = this.getSDKClient();
             if (!voipClient) {
-                console.error('CallKitCoordinator: VoIP client not available');
+                this.pendingPushCallKitUUID = callKitUUID;
+                this.pendingPushEvent = event;
+                console.log('CallKitCoordinator: Queued push until VoIP client is wired', {
+                    callKitUUID,
+                });
                 return;
             }
+            this.pendingPushCallKitUUID = null;
+            this.pendingPushEvent = null;
             // Retrieve pending push data from VoIP bridge
             const pendingPushJson = await voice_pn_bridge_1.VoicePnBridge.getPendingVoipPush();
             if (!pendingPushJson) {
@@ -531,7 +546,13 @@ class CallKitCoordinator {
             console.log('CallKitCoordinator: Handling push notification rejection for CallKit UUID:', callKitUUID);
             if (react_native_1.Platform.OS === 'ios') {
                 console.log('CallKitCoordinator: Processing iOS push notification rejection');
-                this.voipClient.queueEndFromCallKit();
+                const voipClient = this.getSDKClient();
+                if (voipClient) {
+                    voipClient.queueEndFromCallKit();
+                }
+                else {
+                    console.log('CallKitCoordinator: VoIP client not yet available during rejection; skipping queued end');
+                }
                 // Clean up push notification state
                 await this.cleanupPushNotificationState();
                 // Clear push data now that rejection is handled
@@ -679,6 +700,20 @@ class CallKitCoordinator {
      */
     setVoipClient(voipClient) {
         this.voipClient = voipClient;
+        if (this.pendingPushCallKitUUID && !this.processingCalls.has(this.pendingPushCallKitUUID)) {
+            const queuedCallKitUUID = this.pendingPushCallKitUUID;
+            const queuedEvent = this.pendingPushEvent;
+            console.log('CallKitCoordinator: Replaying queued push after VoIP client wiring', {
+                callKitUUID: queuedCallKitUUID,
+            });
+            this.pendingPushCallKitUUID = null;
+            this.pendingPushEvent = null;
+            setTimeout(() => {
+                this.handleCallKitPushReceived(queuedCallKitUUID, queuedEvent).catch((error) => {
+                    console.error('CallKitCoordinator: Error replaying queued push:', error);
+                });
+            }, 0);
+        }
     }
     /**
      * Helper method to clean up push notification state
@@ -726,6 +761,8 @@ class CallKitCoordinator {
         console.log('CallKitCoordinator: Resetting coordinator flags');
         // Reset push notification flag
         this.isCallFromPush = false;
+        this.pendingPushCallKitUUID = null;
+        this.pendingPushEvent = null;
         // Reset auto-answer flag
         this.shouldAutoAnswerNextCall = false;
         console.log('CallKitCoordinator: ✅ Coordinator flags reset');

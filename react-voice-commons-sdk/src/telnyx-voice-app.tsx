@@ -97,6 +97,7 @@ const TelnyxVoiceAppComponent: React.FC<TelnyxVoiceAppProps> = ({
 
   // Static background client instance for singleton pattern
   const backgroundClientRef = useRef<TelnyxVoipClient | null>(null);
+  const lastWiredVoipClientRef = useRef<TelnyxVoipClient | null>(null);
 
   const log = useCallback(
     (message: string, ...args: any[]) => {
@@ -106,6 +107,18 @@ const TelnyxVoiceAppComponent: React.FC<TelnyxVoiceAppProps> = ({
     },
     [debug]
   );
+
+  // Wire the voipClient as early as possible so CallKit push events that arrive
+  // during initial render do not race ahead of the effect-based auto-wiring.
+  if (Platform.OS === 'ios' && lastWiredVoipClientRef.current !== voipClient) {
+    try {
+      const { callKitCoordinator } = require('./callkit/callkit-coordinator');
+      callKitCoordinator.setVoipClient(voipClient);
+      lastWiredVoipClientRef.current = voipClient;
+    } catch (e) {
+      log('Error synchronously wiring voipClient on CallKit coordinator:', e);
+    }
+  }
 
   // Handle app state changes
   const handleAppStateChange = useCallback(

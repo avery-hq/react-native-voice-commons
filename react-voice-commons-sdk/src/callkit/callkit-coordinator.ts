@@ -28,6 +28,8 @@ class CallKitCoordinator {
   private connectedCalls = new Set<string>();
 
   private isCallFromPush = false;
+  private pendingPushCallKitUUID: string | null = null;
+  private pendingPushEvent: any = null;
 
   // Flag to auto-answer the next incoming call (set when answering push notifications via CallKit)
   private shouldAutoAnswerNextCall = false;
@@ -419,9 +421,17 @@ class CallKitCoordinator {
    * This allows us to coordinate between the push notification and any subsequent WebRTC calls
    */
   async handleCallKitPushReceived(callKitUUID: string, event?: any): Promise<void> {
-    if (this.isCallFromPush) {
-      this.isCallFromPush = false;
-      console.log('CallKitCoordinator: Ignoring push received event (already processed)');
+    if (this.processingCalls.has(callKitUUID)) {
+      console.log('CallKitCoordinator: Push received already processing, skipping duplicate', {
+        callKitUUID,
+      });
+      return;
+    }
+
+    if (this.pendingPushCallKitUUID === callKitUUID && !this.voipClient) {
+      console.log('CallKitCoordinator: Push received already queued, waiting for VoIP client', {
+        callKitUUID,
+      });
       return;
     }
 
@@ -442,9 +452,16 @@ class CallKitCoordinator {
       // Get VoIP client instance
       const voipClient = this.getSDKClient();
       if (!voipClient) {
-        console.error('CallKitCoordinator: VoIP client not available');
+        this.pendingPushCallKitUUID = callKitUUID;
+        this.pendingPushEvent = event;
+        console.log('CallKitCoordinator: Queued push until VoIP client is wired', {
+          callKitUUID,
+        });
         return;
       }
+
+      this.pendingPushCallKitUUID = null;
+      this.pendingPushEvent = null;
 
       // Retrieve pending push data from VoIP bridge
       const pendingPushJson = await VoicePnBridge.getPendingVoipPush();
@@ -604,7 +621,14 @@ class CallKitCoordinator {
       if (Platform.OS === 'ios') {
         console.log('CallKitCoordinator: Processing iOS push notification rejection');
 
-        this.voipClient.queueEndFromCallKit();
+        const voipClient = this.getSDKClient();
+        if (voipClient) {
+          voipClient.queueEndFromCallKit();
+        } else {
+          console.log(
+            'CallKitCoordinator: VoIP client not yet available during rejection; skipping queued end'
+          );
+        }
 
         // Clean up push notification state
         await this.cleanupPushNotificationState();
@@ -779,6 +803,24 @@ class CallKitCoordinator {
    */
   setVoipClient(voipClient: TelnyxVoipClient): void {
     this.voipClient = voipClient;
+
+    if (this.pendingPushCallKitUUID && !this.processingCalls.has(this.pendingPushCallKitUUID)) {
+      const queuedCallKitUUID = this.pendingPushCallKitUUID;
+      const queuedEvent = this.pendingPushEvent;
+
+      console.log('CallKitCoordinator: Replaying queued push after VoIP client wiring', {
+        callKitUUID: queuedCallKitUUID,
+      });
+
+      this.pendingPushCallKitUUID = null;
+      this.pendingPushEvent = null;
+
+      setTimeout(() => {
+        this.handleCallKitPushReceived(queuedCallKitUUID, queuedEvent).catch((error) => {
+          console.error('CallKitCoordinator: Error replaying queued push:', error);
+        });
+      }, 0);
+    }
   }
 
   /**
@@ -835,6 +877,8 @@ class CallKitCoordinator {
 
     // Reset push notification flag
     this.isCallFromPush = false;
+    this.pendingPushCallKitUUID = null;
+    this.pendingPushEvent = null;
 
     // Reset auto-answer flag
     this.shouldAutoAnswerNextCall = false;

@@ -40,7 +40,15 @@ export interface VoicePnBridgeInterface {
   clearPendingVoipAction(): Promise<boolean>;
 }
 
-const NativeBridge: VoicePnBridgeInterface = NativeModules.VoicePnBridge;
+let _nativeBridge: VoicePnBridgeInterface | null = null;
+function getNativeBridge(): VoicePnBridgeInterface {
+  if (!_nativeBridge) {
+    _nativeBridge = NativeModules.VoicePnBridge;
+  }
+  return _nativeBridge;
+}
+
+export { getNativeBridge as VoicePnBridgeNative };
 
 /**
  * Enhanced VoicePnBridge with call control and event handling capabilities
@@ -51,7 +59,7 @@ export class VoicePnBridge {
    */
   static async getPendingPushAction(): Promise<{ action?: string; metadata?: string }> {
     try {
-      const result = await NativeBridge.getPendingPushAction();
+      const result = await getNativeBridge().getPendingPushAction();
       return {
         action: result?.action || undefined,
         metadata: result?.metadata || undefined,
@@ -67,7 +75,7 @@ export class VoicePnBridge {
    */
   static async setPendingPushAction(action: string, metadata: string): Promise<boolean> {
     try {
-      return await NativeBridge.setPendingPushAction(action, metadata);
+      return await getNativeBridge().setPendingPushAction(action, metadata);
     } catch (error) {
       console.error('VoicePnBridge: Error setting pending push action:', error);
       return false;
@@ -83,7 +91,7 @@ export class VoicePnBridge {
     timestamp?: number;
   }> {
     try {
-      const result = await NativeBridge.getPendingCallAction();
+      const result = await getNativeBridge().getPendingCallAction();
       return {
         action: result?.action || undefined,
         callId: result?.callId || undefined,
@@ -100,7 +108,7 @@ export class VoicePnBridge {
    */
   static async clearPendingCallAction(): Promise<boolean> {
     try {
-      return await NativeBridge.clearPendingCallAction();
+      return await getNativeBridge().clearPendingCallAction();
     } catch (error) {
       console.error('VoicePnBridge: Error clearing pending call action:', error);
       return false;
@@ -112,7 +120,7 @@ export class VoicePnBridge {
    */
   static async clearPendingPushAction(): Promise<boolean> {
     try {
-      return await NativeBridge.clearPendingPushAction();
+      return await getNativeBridge().clearPendingPushAction();
     } catch (error) {
       console.error('VoicePnBridge: Error clearing pending push action:', error);
       return false;
@@ -125,7 +133,7 @@ export class VoicePnBridge {
    */
   static async endCall(callId?: string): Promise<boolean> {
     try {
-      return await NativeBridge.endCall(callId || null);
+      return await getNativeBridge().endCall(callId || null);
     } catch (error) {
       console.error('VoicePnBridge: Error ending call:', error);
       return false;
@@ -142,7 +150,7 @@ export class VoicePnBridge {
     callId?: string
   ): Promise<boolean> {
     try {
-      return await NativeBridge.showOngoingCallNotification(
+      return await getNativeBridge().showOngoingCallNotification(
         callerName || null,
         callerNumber || null,
         callId || null
@@ -159,7 +167,7 @@ export class VoicePnBridge {
    */
   static async hideOngoingCallNotification(): Promise<boolean> {
     try {
-      return await NativeBridge.hideOngoingCallNotification();
+      return await getNativeBridge().hideOngoingCallNotification();
     } catch (error) {
       console.error('VoicePnBridge: Error hiding ongoing call notification:', error);
       return false;
@@ -172,7 +180,7 @@ export class VoicePnBridge {
    */
   static async hideIncomingCallNotification(): Promise<boolean> {
     try {
-      return await NativeBridge.hideIncomingCallNotification();
+      return await getNativeBridge().hideIncomingCallNotification();
     } catch (error) {
       console.error('VoicePnBridge: Error hiding incoming call notification:', error);
       return false;
@@ -185,7 +193,7 @@ export class VoicePnBridge {
   static async getVoipToken(): Promise<string | null> {
     if (Platform.OS !== 'ios') return null;
     try {
-      return await NativeBridge.getVoipToken();
+      return await getNativeBridge().getVoipToken();
     } catch (error) {
       console.error('VoicePnBridge: Error getting VoIP token:', error);
       return null;
@@ -198,7 +206,7 @@ export class VoicePnBridge {
   static async getPendingVoipPush(): Promise<string | null> {
     if (Platform.OS !== 'ios') return null;
     try {
-      return await NativeBridge.getPendingVoipPush();
+      return await getNativeBridge().getPendingVoipPush();
     } catch (error) {
       console.error('VoicePnBridge: Error getting pending VoIP push:', error);
       return null;
@@ -211,7 +219,7 @@ export class VoicePnBridge {
   static async clearPendingVoipPush(): Promise<boolean> {
     if (Platform.OS !== 'ios') return true;
     try {
-      return await NativeBridge.clearPendingVoipPush();
+      return await getNativeBridge().clearPendingVoipPush();
     } catch (error) {
       console.error('VoicePnBridge: Error clearing pending VoIP push:', error);
       return false;
@@ -224,7 +232,7 @@ export class VoicePnBridge {
   static async getPendingVoipAction(): Promise<string | null> {
     if (Platform.OS !== 'ios') return null;
     try {
-      return await NativeBridge.getPendingVoipAction();
+      return await getNativeBridge().getPendingVoipAction();
     } catch (error) {
       console.error('VoicePnBridge: Error getting pending VoIP action:', error);
       return null;
@@ -237,7 +245,7 @@ export class VoicePnBridge {
   static async clearPendingVoipAction(): Promise<boolean> {
     if (Platform.OS !== 'ios') return true;
     try {
-      return await NativeBridge.clearPendingVoipAction();
+      return await getNativeBridge().clearPendingVoipAction();
     } catch (error) {
       console.error('VoicePnBridge: Error clearing pending VoIP action:', error);
       return false;
@@ -267,5 +275,3 @@ export class VoicePnBridge {
   }
 }
 
-// Export the native bridge for direct access if needed
-export { NativeBridge as VoicePnBridgeNative };

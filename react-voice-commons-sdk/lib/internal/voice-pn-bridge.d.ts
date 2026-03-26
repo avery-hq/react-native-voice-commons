@@ -27,7 +27,8 @@ export interface VoicePnBridgeInterface {
     getPendingVoipAction(): Promise<string | null>;
     clearPendingVoipAction(): Promise<boolean>;
 }
-declare const NativeBridge: VoicePnBridgeInterface;
+declare function getNativeBridge(): VoicePnBridgeInterface;
+export { getNativeBridge as VoicePnBridgeNative };
 /**
  * Enhanced VoicePnBridge with call control and event handling capabilities
  */
@@ -113,4 +114,3 @@ export declare class VoicePnBridge {
      */
     static removeAllCallActionListeners(): void;
 }
-export { NativeBridge as VoicePnBridgeNative };

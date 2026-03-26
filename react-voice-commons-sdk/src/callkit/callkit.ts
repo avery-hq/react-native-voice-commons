@@ -317,6 +317,19 @@ class CallKitManager {
   }
 }
 
-// Export singleton instance
-export const CallKit = new CallKitManager();
+let _callKitInstance: CallKitManager | null = null;
+
+function getCallKitInstance(): CallKitManager {
+  if (!_callKitInstance) {
+    _callKitInstance = new CallKitManager();
+  }
+  return _callKitInstance;
+}
+
+// Proxy that lazily initializes the singleton on first property access
+export const CallKit = new Proxy({} as CallKitManager, {
+  get(_target, prop) {
+    return (getCallKitInstance() as any)[prop];
+  },
+});
 export default CallKit;

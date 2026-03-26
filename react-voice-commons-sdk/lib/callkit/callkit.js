@@ -257,6 +257,17 @@ class CallKitManager {
         return react_native_1.Platform.OS === 'ios' && this.bridge !== null;
     }
 }
-// Export singleton instance
-exports.CallKit = new CallKitManager();
+let _callKitInstance = null;
+function getCallKitInstance() {
+    if (!_callKitInstance) {
+        _callKitInstance = new CallKitManager();
+    }
+    return _callKitInstance;
+}
+// Proxy that lazily initializes the singleton on first property access
+exports.CallKit = new Proxy({}, {
+    get(_target, prop) {
+        return getCallKitInstance()[prop];
+    },
+});
 exports.default = exports.CallKit;

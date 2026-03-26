@@ -756,6 +756,17 @@ class CallKitCoordinator {
     }
 }
 CallKitCoordinator.instance = null;
-// Export singleton instance
-exports.callKitCoordinator = CallKitCoordinator.getInstance();
+let _coordinatorInstance = null;
+function getCallKitCoordinator() {
+    if (!_coordinatorInstance) {
+        _coordinatorInstance = CallKitCoordinator.getInstance();
+    }
+    return _coordinatorInstance;
+}
+// Proxy that lazily initializes the singleton on first property access
+exports.callKitCoordinator = new Proxy({}, {
+    get(_target, prop) {
+        return getCallKitCoordinator()[prop];
+    },
+});
 exports.default = exports.callKitCoordinator;

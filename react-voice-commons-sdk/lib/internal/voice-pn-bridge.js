@@ -1,9 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VoicePnBridgeNative = exports.VoicePnBridge = void 0;
+exports.VoicePnBridge = void 0;
+exports.VoicePnBridgeNative = getNativeBridge;
 const react_native_1 = require("react-native");
-const NativeBridge = react_native_1.NativeModules.VoicePnBridge;
-exports.VoicePnBridgeNative = NativeBridge;
+let _nativeBridge = null;
+function getNativeBridge() {
+    if (!_nativeBridge) {
+        _nativeBridge = react_native_1.NativeModules.VoicePnBridge;
+    }
+    return _nativeBridge;
+}
 /**
  * Enhanced VoicePnBridge with call control and event handling capabilities
  */
@@ -13,7 +19,7 @@ class VoicePnBridge {
      */
     static async getPendingPushAction() {
         try {
-            const result = await NativeBridge.getPendingPushAction();
+            const result = await getNativeBridge().getPendingPushAction();
             return {
                 action: result?.action || undefined,
                 metadata: result?.metadata || undefined,
@@ -29,7 +35,7 @@ class VoicePnBridge {
      */
     static async setPendingPushAction(action, metadata) {
         try {
-            return await NativeBridge.setPendingPushAction(action, metadata);
+            return await getNativeBridge().setPendingPushAction(action, metadata);
         }
         catch (error) {
             console.error('VoicePnBridge: Error setting pending push action:', error);
@@ -41,7 +47,7 @@ class VoicePnBridge {
      */
     static async getPendingCallAction() {
         try {
-            const result = await NativeBridge.getPendingCallAction();
+            const result = await getNativeBridge().getPendingCallAction();
             return {
                 action: result?.action || undefined,
                 callId: result?.callId || undefined,
@@ -58,7 +64,7 @@ class VoicePnBridge {
      */
     static async clearPendingCallAction() {
         try {
-            return await NativeBridge.clearPendingCallAction();
+            return await getNativeBridge().clearPendingCallAction();
         }
         catch (error) {
             console.error('VoicePnBridge: Error clearing pending call action:', error);
@@ -70,7 +76,7 @@ class VoicePnBridge {
      */
     static async clearPendingPushAction() {
         try {
-            return await NativeBridge.clearPendingPushAction();
+            return await getNativeBridge().clearPendingPushAction();
         }
         catch (error) {
             console.error('VoicePnBridge: Error clearing pending push action:', error);
@@ -83,7 +89,7 @@ class VoicePnBridge {
      */
     static async endCall(callId) {
         try {
-            return await NativeBridge.endCall(callId || null);
+            return await getNativeBridge().endCall(callId || null);
         }
         catch (error) {
             console.error('VoicePnBridge: Error ending call:', error);
@@ -96,7 +102,7 @@ class VoicePnBridge {
      */
     static async showOngoingCallNotification(callerName, callerNumber, callId) {
         try {
-            return await NativeBridge.showOngoingCallNotification(callerName || null, callerNumber || null, callId || null);
+            return await getNativeBridge().showOngoingCallNotification(callerName || null, callerNumber || null, callId || null);
         }
         catch (error) {
             console.error('VoicePnBridge: Error showing ongoing call notification:', error);
@@ -109,7 +115,7 @@ class VoicePnBridge {
      */
     static async hideOngoingCallNotification() {
         try {
-            return await NativeBridge.hideOngoingCallNotification();
+            return await getNativeBridge().hideOngoingCallNotification();
         }
         catch (error) {
             console.error('VoicePnBridge: Error hiding ongoing call notification:', error);
@@ -122,7 +128,7 @@ class VoicePnBridge {
      */
     static async hideIncomingCallNotification() {
         try {
-            return await NativeBridge.hideIncomingCallNotification();
+            return await getNativeBridge().hideIncomingCallNotification();
         }
         catch (error) {
             console.error('VoicePnBridge: Error hiding incoming call notification:', error);
@@ -136,7 +142,7 @@ class VoicePnBridge {
         if (react_native_1.Platform.OS !== 'ios')
             return null;
         try {
-            return await NativeBridge.getVoipToken();
+            return await getNativeBridge().getVoipToken();
         }
         catch (error) {
             console.error('VoicePnBridge: Error getting VoIP token:', error);
@@ -150,7 +156,7 @@ class VoicePnBridge {
         if (react_native_1.Platform.OS !== 'ios')
             return null;
         try {
-            return await NativeBridge.getPendingVoipPush();
+            return await getNativeBridge().getPendingVoipPush();
         }
         catch (error) {
             console.error('VoicePnBridge: Error getting pending VoIP push:', error);
@@ -164,7 +170,7 @@ class VoicePnBridge {
         if (react_native_1.Platform.OS !== 'ios')
             return true;
         try {
-            return await NativeBridge.clearPendingVoipPush();
+            return await getNativeBridge().clearPendingVoipPush();
         }
         catch (error) {
             console.error('VoicePnBridge: Error clearing pending VoIP push:', error);
@@ -178,7 +184,7 @@ class VoicePnBridge {
         if (react_native_1.Platform.OS !== 'ios')
             return null;
         try {
-            return await NativeBridge.getPendingVoipAction();
+            return await getNativeBridge().getPendingVoipAction();
         }
         catch (error) {
             console.error('VoicePnBridge: Error getting pending VoIP action:', error);
@@ -192,7 +198,7 @@ class VoicePnBridge {
         if (react_native_1.Platform.OS !== 'ios')
             return true;
         try {
-            return await NativeBridge.clearPendingVoipAction();
+            return await getNativeBridge().clearPendingVoipAction();
         }
         catch (error) {
             console.error('VoicePnBridge: Error clearing pending VoIP action:', error);

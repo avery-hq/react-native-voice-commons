@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/react-voice-commons-sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A high-level, state-agnostic, drop-in module for the Telnyx React Native SDK that simplifies WebRTC voice calling integration",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -88,7 +88,6 @@
     "@react-native-community/eslint-config": "^3.2.0",
     "@telnyx/react-native-voice-sdk": "^0.4.0",
     "eventemitter3": "^5.0.1",
-    "expo": "~53.0.22",
     "react-native-voip-push-notification": "^3.3.3",
     "rxjs": "^7.8.2"
   },

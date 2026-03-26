@@ -352,7 +352,9 @@ export class TelnyxVoipClient {
     destination: string,
     callerName?: string,
     callerNumber?: string,
-    customHeaders?: Record<string, string>
+    customHeaders?:
+      | Record<string, string>
+      | { name: string; value: string }[]
   ): Promise<Call> {
     this._throwIfDisposed();
 

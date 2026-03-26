@@ -116,12 +116,20 @@ class CallStateController {
             throw new Error('Telnyx client not available');
         }
         try {
+            const normalizedCustomHeaders = Array.isArray(customHeaders)
+                ? customHeaders
+                : customHeaders
+                    ? Object.entries(customHeaders).map(([name, value]) => ({
+                        name,
+                        value,
+                    }))
+                    : undefined;
             // Create the call using the Telnyx SDK
             const callOptions = {
                 destinationNumber: destination,
                 callerIdName: callerName,
                 callerIdNumber: callerNumber,
-                customHeaders,
+                customHeaders: normalizedCustomHeaders,
             };
             const telnyxCall = await this._sessionManager.telnyxClient.newCall(callOptions);
             // Create our wrapper Call object

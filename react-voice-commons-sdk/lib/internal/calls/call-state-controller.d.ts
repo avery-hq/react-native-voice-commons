@@ -58,7 +58,10 @@ export declare class CallStateController {
     /**
      * Initiate a new outgoing call
      */
-    newCall(destination: string, callerName?: string, callerNumber?: string, customHeaders?: Record<string, string>): Promise<Call>;
+    newCall(destination: string, callerName?: string, callerNumber?: string, customHeaders?: Record<string, string> | {
+        name: string;
+        value: string;
+    }[]): Promise<Call>;
     /**
      * Set callbacks for waiting for invite logic (used for push notifications)
      */

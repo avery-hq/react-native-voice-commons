@@ -138,7 +138,9 @@ export class CallStateController {
     destination: string,
     callerName?: string,
     callerNumber?: string,
-    customHeaders?: Record<string, string>
+    customHeaders?:
+      | Record<string, string>
+      | { name: string; value: string }[]
   ): Promise<Call> {
     if (this._disposed) {
       throw new Error('CallStateController has been disposed');
@@ -149,12 +151,21 @@ export class CallStateController {
     }
 
     try {
+      const normalizedCustomHeaders = Array.isArray(customHeaders)
+        ? customHeaders
+        : customHeaders
+          ? Object.entries(customHeaders).map(([name, value]) => ({
+              name,
+              value,
+            }))
+          : undefined;
+
       // Create the call using the Telnyx SDK
       const callOptions: CallOptions = {
         destinationNumber: destination,
         callerIdName: callerName,
         callerIdNumber: callerNumber,
-        customHeaders,
+        customHeaders: normalizedCustomHeaders,
       };
       const telnyxCall = await this._sessionManager.telnyxClient.newCall(callOptions);
 

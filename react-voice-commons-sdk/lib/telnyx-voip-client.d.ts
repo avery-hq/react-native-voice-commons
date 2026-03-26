@@ -155,7 +155,10 @@ export declare class TelnyxVoipClient {
      *
      * The call's state can be monitored through the returned Call object's streams.
      */
-    newCall(destination: string, callerName?: string, callerNumber?: string, customHeaders?: Record<string, string>): Promise<Call>;
+    newCall(destination: string, callerName?: string, callerNumber?: string, customHeaders?: Record<string, string> | {
+        name: string;
+        value: string;
+    }[]): Promise<Call>;
     /**
      * Handle push notification payload.
      *
